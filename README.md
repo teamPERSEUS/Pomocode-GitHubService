@@ -1,2 +1,2 @@
 # Pomocode-GitHubService
-OAuth and GitHub data microservice for the Pomocode Application.
+GitHub OAuth and GitHub data microservice for the Pomocode Application.
