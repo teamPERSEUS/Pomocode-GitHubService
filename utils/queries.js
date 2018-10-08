@@ -60,5 +60,29 @@ module.exports = {
     viewer {
       login
     }
-  }`
+  }`,
 };
+
+const assignedIssues = user => `query {
+  search(query:"assignee:${user} is:issue state:open",type:ISSUE,last:100) {
+    issueCount
+    nodes {
+      ... on Issue {
+        id
+        number
+        title
+        url
+        resourcePath
+        repository {
+          name
+        }
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}`;
+
+module.exports.assignedIssues = assignedIssues;
