@@ -1,6 +1,6 @@
 require('dotenv').config();
 const axios = require('axios');
-const { db, Users, Repos, Issues } = require('../database/database');
+const { Repos, Issues } = require('../database/database');
 const queries = require('../utils/queries');
 const gitHubAPI = 'https://api.github.com/graphql';
 
@@ -14,7 +14,7 @@ const gitQuery = (token, query) => {
   return axios.post(gitHubAPI, { query }, queryHeader);
 };
 
-// save assigned issues from github to db
+// save assigned issues/repos from github to db
 const updateReposAndIssues = (token, user) => {
   let issuesRetrieved = [];
   let reposRetrieved = [];
@@ -22,6 +22,8 @@ const updateReposAndIssues = (token, user) => {
   return new Promise((resolve, reject) => {
     gitQuery(token, queries.assignedIssues(user))
       .then(({ data }) => {
+
+        // get assigned issues to user
         issuesRetrieved = data.data.search.nodes.map((issue) => {
           return {
             git_id: issue.id,
@@ -33,6 +35,8 @@ const updateReposAndIssues = (token, user) => {
             complete: issue.state === 'OPEN' ? false : true,
           }
         });
+
+        // get repos that have assigned issues to user
         data.data.search.nodes.reduce((acc, issue) => {
           if (acc[issue.repository.name] === undefined) {
             acc[issue.repository.name] = 1;
@@ -45,13 +49,14 @@ const updateReposAndIssues = (token, user) => {
           }
           return acc;
         }, {});
-        // console.log('Issues:', issuesRetrieved);
-        // console.log('Repos:', reposRetrieved);
+
+        // store/update assignedIssues in db
         return Issues.bulkCreate(issuesRetrieved, {
           updateOnDuplicate: ["complete"]
         });
       })
       .then(() => {
+        // store/update repos with issues assigned to user in db
         return Repos.bulkCreate(reposRetrieved, {
           updateOnDuplicate: []
         });

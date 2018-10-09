@@ -19,24 +19,22 @@ app.use((req, res, next) => {
   next();
 });
 
-// retrieve user after login. obtain issues and store
+// retrieve/store user after login.
 app.post('/login', (req, res) => {
-  // obtain username
   gitQuery(req.body.token, Queries.login)
     .then(({ data }) => {
       User.findOrCreate({ where: { name: data.data.viewer.login } })
-        // .then(() => {
-        //   // save issues from github to db
-        //   return updateReposAndIssues(req.body.token, data.data.viewer.login)
-        // })
-        .then(() => {
+        .spread((userResult, created) => {
+          if (created) {
+            console.log("New User:", userResult.dataValues.name);
+          }
           res.send(data.data.viewer);
-        })
-        .catch((err) => {
-          console.log("Error in saving in DB:", err);
-          res.status(500).send("Error in Login");
-          throw (err);
         });
+    })
+    .catch((err) => {
+      console.log("Error in saving in DB:", err);
+      res.status(500).send("Error in Login");
+      throw (err);
     });
 });
 
@@ -65,21 +63,6 @@ app.post('/refreshGitData', (req, res) => {
       console.log("Error with DB:", err);
       res.status(500).send("Error in obtaining Repo/Issue Data");
       throw (err);
-    });
-})
-
-// query github API v4(GraphQL)
-app.post('/query', (req, res) => {
-  let query = Queries[req.body.query];
-  if (typeof query === 'function') {
-    query = Queries[req.body.query](req.body.user)
-  }
-  gitQuery(req.body.token, query)
-    .then(({ data }) => {
-      res.send(data.data);
-    })
-    .catch((err) => {
-      res.status(500).send(err);
     });
 });
 

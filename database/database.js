@@ -4,8 +4,7 @@ var db = new Sequelize('pomo_gitservice', 'root', '', {
   dialect: 'mysql'
 });
 
-
-// NOTE: Create DB 'pomo_gitservice' before running
+// NOTE: Create DB 'pomo_gitservice' in mysql before running
 db.authenticate()
   .then(() => {
     console.log('Connection has been established successfully')
@@ -15,6 +14,7 @@ db.authenticate()
   });
 
 /* DB --SCHEMA-- */
+// Users table
 const User = db.define('user', {
   id: {
     type: Sequelize.INTEGER,
@@ -27,6 +27,7 @@ const User = db.define('user', {
   }
 });
 
+// Repos table
 const Repos = db.define('repos', {
   id: {
     type: Sequelize.INTEGER,
@@ -42,6 +43,7 @@ const Repos = db.define('repos', {
   owner: Sequelize.STRING,
 });
 
+// Issues table
 const Issues = db.define('issues', {
   id: {
     type: Sequelize.INTEGER,
