@@ -1,4 +1,3 @@
-require('dotenv').config();
 const axios = require('axios');
 const { Repos, Issues } = require('../database/database');
 const queries = require('../utils/queries');
