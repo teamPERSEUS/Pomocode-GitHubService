@@ -1,80 +1,25 @@
-module.exports = {
-  repoNames: `query {
-    viewer {
-      name,
-      repositories(last:50) {
-        nodes {
-          id
-          name
-        }
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
-      }
-    }
-  }`,
-  fileStructure: {
-    query: `query ($path:String, $repo:String!){
-    viewer{
-      repository(name: $repo) {
-        object(expression: $path) {
-          ... on Tree {
-            entries {
-              type
-              name
-            }
-          }
-        }
-      }
-    }
-  }`,
-    variables: {
-      path: 'master:',
-      repo: 'Pomocode',
-    },
-  },
-  issues: `query {
-    viewer {
-      issues (last:50 orderBy: {field:UPDATED_AT direction:DESC} after: ) {
-        totalCount
-        nodes {
-          id
-          repository {
-            name
-          }
-          number
-          title
-          updatedAt
-          closedAt
-          body
-        }
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
-      }
-    }
-  }`,
-  login: `query {
-    viewer {
-      login
-    }
-  }`,
-};
+const login = `query {
+  viewer {
+    login
+  }
+}`;
 
 const assignedIssues = user => `query {
-  search(query:"assignee:${user} is:issue state:open",type:ISSUE,last:100) {
+  search(query:"assignee:${user} is:issue",type:ISSUE,last:100) {
     issueCount
     nodes {
       ... on Issue {
         id
         number
+        state
         title
-        url
-        resourcePath
+        body
         repository {
+          id
           name
+          owner {
+            login
+          }
         }
       }
     }
@@ -85,4 +30,5 @@ const assignedIssues = user => `query {
   }
 }`;
 
+module.exports.login = login;
 module.exports.assignedIssues = assignedIssues;

@@ -1,8 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const { gitQuery } = require('../utils/github');
+
 const Queries = require('../utils/queries');
+const { gitQuery, updateReposAndIssues } = require('../utils/github');
+const { User, Issues, Repos } = require('../database/database');
 
 const app = express();
 app.use(bodyParser.json());
@@ -17,12 +19,54 @@ app.use((req, res, next) => {
   next();
 });
 
+// retrieve user after login. obtain issues and store
 app.post('/login', (req, res) => {
+  // obtain username
   gitQuery(req.body.token, Queries.login)
     .then(({ data }) => {
-      res.send(data.data.viewer);
+      User.findOrCreate({ where: { name: data.data.viewer.login } })
+        // .then(() => {
+        //   // save issues from github to db
+        //   return updateReposAndIssues(req.body.token, data.data.viewer.login)
+        // })
+        .then(() => {
+          res.send(data.data.viewer);
+        })
+        .catch((err) => {
+          console.log("Error in saving in DB:", err);
+          res.status(500).send("Error in Login");
+          throw (err);
+        });
     });
 });
+
+// send out repo and issue data to app
+app.post('/refreshGitData', (req, res) => {
+  const dbData = {};
+  updateReposAndIssues(req.body.token, req.body.user)
+    .then(() => {
+      return Issues.findAll({
+        attributes: { exclude: ['id'] },
+        where: { username: req.body.user },
+      });
+    })
+    .then((dbIssues) => {
+      dbData.issues = dbIssues;
+      return Repos.findAll({
+        attributes: { exclude: ['id'] },
+        where: { username: req.body.user },
+      });
+    })
+    .then((dbRepos) => {
+      dbData.repos = dbRepos;
+      res.send(dbData);
+    })
+    .catch((err) => {
+      console.log("Error with DB:", err);
+      res.status(500).send("Error in obtaining Repo/Issue Data");
+      throw (err);
+    });
+})
 
 // query github API v4(GraphQL)
 app.post('/query', (req, res) => {
@@ -42,5 +86,3 @@ app.post('/query', (req, res) => {
 app.listen(process.env.PORT, () => {
   console.log(`App listening on port: ${process.env.PORT}`);
 });
-
-
