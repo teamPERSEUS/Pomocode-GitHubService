@@ -38,7 +38,7 @@ app.post('/login', (req, res) => {
     });
 });
 
-// send out repo and issue data to app
+// obtain github data, store it and send to app
 app.post('/refreshGitData', (req, res) => {
   const dbData = {};
   updateReposAndIssues(req.body.token, req.body.user)
@@ -64,6 +64,54 @@ app.post('/refreshGitData', (req, res) => {
       res.status(500).send("Error in obtaining Repo/Issue Data");
       throw (err);
     });
+});
+
+// update issue, set as planned
+app.put('/addIssuePlan', (req, res) => {
+  var username = req.body.user;
+  var git_id = req.body.git_id;
+  var estimate_time = (req.body.hrs * 60 * 60) + (req.body.minutes * 60);
+  var estimate_start_date = req.body.startdate;
+  var estimate_end_date = req.body.enddate;
+
+  Issues.update({
+    estimate_time: estimate_time,
+    estimate_start_date: estimate_start_date,
+    estimate_end_date: estimate_end_date,
+  },
+    {
+      where: {
+        git_id: git_id,
+        username: username,
+      }
+    })
+    .then(() => {
+      res.send();
+    })
+    .catch((err) => {
+      console.log(`User ${req.body.user}. Error in adding issue to plan:`, err);
+      res.status(500).send("Error in adding issue to plan.");
+    });
+});
+
+
+// send planned issues to the app
+app.get('/getPlannedIssues', (req, res) => {
+  user = req.query.user;
+  Issues.findAll({
+    where: {
+      username: user,
+      complete: false,
+      planned: true,
+    }
+  })
+    .then((plannedIssues) => {
+      res.send(plannedIssues);
+    })
+    .catch((err) => {
+      console.log(`User: ${user}. Error in obtaining planned issues:`, err);
+      res.status(500).send("Error in obtaining planned Issues.");
+    })
 });
 
 app.listen(process.env.PORT, () => {

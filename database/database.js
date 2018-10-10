@@ -63,10 +63,14 @@ const Issues = db.define('issues', {
     type: Sequelize.BOOLEAN,
     defaultValue: false
   },
+  planned: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false
+  },
   estimate_start_date: Sequelize.DATEONLY,
   estimate_end_date: Sequelize.DATEONLY,
-  estimate_hrs: Sequelize.FLOAT,
-  hrs_remaining: Sequelize.FLOAT,
+  estimate_time: Sequelize.FLOAT,
+  time_remaining: Sequelize.FLOAT,
   startdate: Sequelize.DATEONLY,
   enddate: Sequelize.DATEONLY
 });
