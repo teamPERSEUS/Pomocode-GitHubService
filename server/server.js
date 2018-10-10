@@ -68,21 +68,16 @@ app.post('/refreshGitData', (req, res) => {
 
 // update issue, set as planned
 app.put('/addIssuePlan', (req, res) => {
-  var username = req.body.user;
-  var git_id = req.body.git_id;
-  var estimate_time = (req.body.hrs * 60 * 60) + (req.body.minutes * 60);
-  var estimate_start_date = req.body.startdate;
-  var estimate_end_date = req.body.enddate;
-
   Issues.update({
-    estimate_time: estimate_time,
-    estimate_start_date: estimate_start_date,
-    estimate_end_date: estimate_end_date,
+    planned: true,
+    estimate_time: (req.body.hours * 60 * 60) + (req.body.minutes * 60),
+    estimate_start_date: req.body.startdate,
+    estimate_end_date: req.body.enddate,
   },
     {
       where: {
-        git_id: git_id,
-        username: username,
+        git_id: req.body.git_id,
+        username: req.body.username,
       }
     })
     .then(() => {
@@ -97,10 +92,9 @@ app.put('/addIssuePlan', (req, res) => {
 
 // send planned issues to the app
 app.get('/getPlannedIssues', (req, res) => {
-  user = req.query.user;
   Issues.findAll({
     where: {
-      username: user,
+      username: req.query.user,
       complete: false,
       planned: true,
     }
@@ -109,7 +103,7 @@ app.get('/getPlannedIssues', (req, res) => {
       res.send(plannedIssues);
     })
     .catch((err) => {
-      console.log(`User: ${user}. Error in obtaining planned issues:`, err);
+      console.log(`User: ${req.query.user}. Error in obtaining planned issues:`, err);
       res.status(500).send("Error in obtaining planned Issues.");
     })
 });
