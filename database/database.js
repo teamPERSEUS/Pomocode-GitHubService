@@ -58,7 +58,7 @@ const Issues = db.define('issues', {
   reponame: Sequelize.STRING,
   number: Sequelize.INTEGER,
   title: Sequelize.STRING,
-  body: Sequelize.STRING,
+  body: Sequelize.TEXT('long'),
   complete: {
     type: Sequelize.BOOLEAN,
     defaultValue: false
