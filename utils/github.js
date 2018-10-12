@@ -30,7 +30,9 @@ const updateReposAndIssues = (token, user) => {
             title: issue.title,
             body: issue.body,
             username: user,
+            repo_url: issue.repository.url,
             reponame: issue.repository.name,
+            organization: issue.repository.owner.login,
             complete: issue.state === 'OPEN' ? false : true,
           }
         });
@@ -43,7 +45,8 @@ const updateReposAndIssues = (token, user) => {
               username: user,
               git_id: issue.repository.id,
               name: issue.repository.name,
-              owner: issue.repository.owner.login
+              owner: issue.repository.owner.login,
+              url: issue.repository.url,
             });
           }
           return acc;
@@ -51,13 +54,13 @@ const updateReposAndIssues = (token, user) => {
 
         // store/update assignedIssues in db
         return Issues.bulkCreate(issuesRetrieved, {
-          updateOnDuplicate: ["complete"]
+          updateOnDuplicate: ["title", "body", "reponame", "complete"]
         });
       })
       .then(() => {
         // store/update repos with issues assigned to user in db
         return Repos.bulkCreate(reposRetrieved, {
-          updateOnDuplicate: []
+          updateOnDuplicate: ["name", "owner"]
         });
       })
       .then(() => resolve())

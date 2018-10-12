@@ -41,6 +41,7 @@ const Repos = db.define('repos', {
   username: Sequelize.STRING,
   name: Sequelize.STRING,
   owner: Sequelize.STRING,
+  url: Sequelize.STRING,
 });
 
 // Issues table
@@ -56,6 +57,8 @@ const Issues = db.define('issues', {
   },
   username: Sequelize.STRING,
   reponame: Sequelize.STRING,
+  repo_url: Sequelize.STRING,
+  organization: Sequelize.STRING,
   number: Sequelize.INTEGER,
   title: Sequelize.STRING,
   body: Sequelize.TEXT('long'),

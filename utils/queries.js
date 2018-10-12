@@ -17,6 +17,7 @@ const assignedIssues = user => `query {
         repository {
           id
           name
+          url
           owner {
             login
           }
