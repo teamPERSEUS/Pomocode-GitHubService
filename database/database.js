@@ -56,6 +56,7 @@ const Issues = db.define('issues', {
   },
   username: Sequelize.STRING,
   reponame: Sequelize.STRING,
+  organization: Sequelize.STRING,
   number: Sequelize.INTEGER,
   title: Sequelize.STRING,
   body: Sequelize.TEXT('long'),

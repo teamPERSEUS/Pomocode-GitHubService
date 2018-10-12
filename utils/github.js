@@ -31,6 +31,7 @@ const updateReposAndIssues = (token, user) => {
             body: issue.body,
             username: user,
             reponame: issue.repository.name,
+            organization: issue.repository.owner.login,
             complete: issue.state === 'OPEN' ? false : true,
           }
         });
@@ -51,13 +52,13 @@ const updateReposAndIssues = (token, user) => {
 
         // store/update assignedIssues in db
         return Issues.bulkCreate(issuesRetrieved, {
-          updateOnDuplicate: ["complete"]
+          updateOnDuplicate: ["title", "body", "reponame", "complete"]
         });
       })
       .then(() => {
         // store/update repos with issues assigned to user in db
         return Repos.bulkCreate(reposRetrieved, {
-          updateOnDuplicate: []
+          updateOnDuplicate: ["name", "owner"]
         });
       })
       .then(() => resolve())

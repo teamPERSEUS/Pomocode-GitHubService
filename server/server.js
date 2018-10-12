@@ -45,7 +45,7 @@ app.post('/refreshGitData', (req, res) => {
     .then(() => {
       return Issues.findAll({
         attributes: { exclude: ['id'] },
-        where: { username: req.body.user },
+        where: { username: req.body.user, complete: false },
       });
     })
     .then((dbIssues) => {
@@ -97,7 +97,11 @@ app.get('/getPlannedIssues', (req, res) => {
       username: req.query.user,
       complete: false,
       planned: true,
-    }
+    },
+    order: [
+      ['estimate_start_date', 'ASC'],
+      ['estimate_time', 'DESC']
+    ],
   })
     .then((plannedIssues) => {
       res.send(plannedIssues);
