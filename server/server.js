@@ -1,4 +1,5 @@
 require('dotenv').config();
+const axios = require('axios');
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -68,19 +69,17 @@ app.post('/refreshGitData', (req, res) => {
 
 // update issue, set as planned
 app.put('/addIssuePlan', (req, res) => {
-  Issues.update({
-    planned: true,
-    estimate_time: (req.body.hours * 60 * 60) + (req.body.minutes * 60),
-    estimate_start_date: req.body.startdate,
-    estimate_end_date: req.body.enddate,
-  },
-    {
-      where: {
-        git_id: req.body.git_id,
-        username: req.body.username,
-      }
-    })
+  Issues.update(req.body, {
+    where: {
+      git_id: req.body.git_id,
+      username: req.body.username,
+    },
+  })
     .then(() => {
+      axios.post('http://localhost:4002/api/plannerMicro', req.body)
+        .catch((err) => {
+          console.log("Error in sending issue to analytics:", err);
+        });
       res.send();
     })
     .catch((err) => {
@@ -90,14 +89,20 @@ app.put('/addIssuePlan', (req, res) => {
 });
 
 
-// send planned issues to the app
-app.get('/getPlannedIssues', (req, res) => {
+// send planned issues to the app / vscode service
+app.get('/api/plannedIssues', (req, res) => {
+  const filterBy = {
+    username: req.query.user,
+    complete: false,
+    planned: true,
+  };
+
+  if (req.query.url !== undefined) {
+    filterBy.repo_url = req.query.url;
+  }
+
   Issues.findAll({
-    where: {
-      username: req.query.user,
-      complete: false,
-      planned: true,
-    },
+    where: filterBy,
     order: [
       ['estimate_start_date', 'ASC'],
       ['estimate_time', 'DESC']
