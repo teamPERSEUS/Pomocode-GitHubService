@@ -73,9 +73,6 @@ const Issues = db.define('issues', {
   estimate_start_date: Sequelize.DATEONLY,
   estimate_end_date: Sequelize.DATEONLY,
   estimate_time: Sequelize.FLOAT,
-  time_remaining: Sequelize.FLOAT,
-  startdate: Sequelize.DATEONLY,
-  enddate: Sequelize.DATEONLY
 });
 
 // create/connect to tables in the db
