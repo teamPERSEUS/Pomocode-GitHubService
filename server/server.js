@@ -90,15 +90,15 @@ app.put('/addIssuePlan', (req, res) => {
 
 
 // send planned issues to the app / vscode service
-app.get('/api/plannedIssues', (req, res) => {
+app.post('/api/plannedIssues', (req, res) => {
   const filterBy = {
-    username: req.query.user,
+    username: req.body.user,
     complete: false,
     planned: true,
   };
 
   if (req.query.url !== undefined) {
-    filterBy.repo_url = req.query.url;
+    filterBy.repo_url = req.body.url;
   }
 
   Issues.findAll({
