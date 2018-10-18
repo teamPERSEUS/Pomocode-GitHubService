@@ -20,6 +20,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/', (req, res) => {
+  res.send('plannerService')
+});
+
 // retrieve/store user after login.
 app.post('/login', (req, res) => {
   gitQuery(req.body.token, Queries.login)
