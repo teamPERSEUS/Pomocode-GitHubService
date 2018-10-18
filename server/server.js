@@ -1,4 +1,4 @@
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') require('dotenv').config();
 const axios = require('axios');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -14,32 +14,36 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // CORS headers
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  );
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', '*');
   next();
 });
 
 app.get('/', (req, res) => {
-  res.send('plannerService')
+  res.send('plannerService');
 });
 
 // retrieve/store user after login.
 app.post('/login', (req, res) => {
   gitQuery(req.body.token, Queries.login)
     .then(({ data }) => {
-      User.findOrCreate({ where: { name: data.data.viewer.login } })
-        .spread((userResult, created) => {
+      User.findOrCreate({ where: { name: data.data.viewer.login } }).spread(
+        (userResult, created) => {
           if (created) {
-            console.log("New User:", userResult.dataValues.name);
+            console.log('New User:', userResult.dataValues.name);
           }
           res.send(data.data.viewer);
-        });
+        }
+      );
     })
-    .catch((err) => {
-      console.log("Error in saving in DB:", err);
-      res.status(500).send("Error in Login");
-      throw (err);
+    .catch(err => {
+      console.log('Error in saving in DB:', err);
+      res.status(500).send('Error in Login');
+      throw err;
     });
 });
 
@@ -50,24 +54,24 @@ app.post('/refreshGitData', (req, res) => {
     .then(() => {
       return Issues.findAll({
         attributes: { exclude: ['id'] },
-        where: { username: req.body.user, complete: false },
+        where: { username: req.body.user, complete: false }
       });
     })
-    .then((dbIssues) => {
+    .then(dbIssues => {
       dbData.issues = dbIssues;
       return Repos.findAll({
         attributes: { exclude: ['id'] },
-        where: { username: req.body.user },
+        where: { username: req.body.user }
       });
     })
-    .then((dbRepos) => {
+    .then(dbRepos => {
       dbData.repos = dbRepos;
       res.send(dbData);
     })
-    .catch((err) => {
-      console.log("Error with DB:", err);
-      res.status(500).send("Error in obtaining Repo/Issue Data");
-      throw (err);
+    .catch(err => {
+      console.log('Error with DB:', err);
+      res.status(500).send('Error in obtaining Repo/Issue Data');
+      throw err;
     });
 });
 
@@ -76,29 +80,29 @@ app.put('/addIssuePlan', (req, res) => {
   Issues.update(req.body, {
     where: {
       git_id: req.body.git_id,
-      username: req.body.username,
-    },
+      username: req.body.username
+    }
   })
     .then(() => {
-      axios.post('http://localhost:4002/api/plannerMicro', req.body)
-        .catch((err) => {
-          console.log("Error in sending issue to analytics:", err);
+      axios
+        .post('http://localhost:4002/api/plannerMicro', req.body)
+        .catch(err => {
+          console.log('Error in sending issue to analytics:', err);
         });
       res.send();
     })
-    .catch((err) => {
+    .catch(err => {
       console.log(`User ${req.body.user}. Error in adding issue to plan:`, err);
-      res.status(500).send("Error in adding issue to plan.");
+      res.status(500).send('Error in adding issue to plan.');
     });
 });
-
 
 // send planned issues to the app / vscode service
 app.post('/api/plannedIssues', (req, res) => {
   const filterBy = {
     username: req.body.user,
     complete: false,
-    planned: true,
+    planned: true
   };
 
   if (req.query.url !== undefined) {
@@ -107,18 +111,18 @@ app.post('/api/plannedIssues', (req, res) => {
 
   Issues.findAll({
     where: filterBy,
-    order: [
-      ['estimate_start_date', 'ASC'],
-      ['estimate_time', 'DESC']
-    ],
+    order: [['estimate_start_date', 'ASC'], ['estimate_time', 'DESC']]
   })
-    .then((plannedIssues) => {
+    .then(plannedIssues => {
       res.send(plannedIssues);
     })
-    .catch((err) => {
-      console.log(`User: ${req.query.user}. Error in obtaining planned issues:`, err);
-      res.status(500).send("Error in obtaining planned Issues.");
-    })
+    .catch(err => {
+      console.log(
+        `User: ${req.query.user}. Error in obtaining planned issues:`,
+        err
+      );
+      res.status(500).send('Error in obtaining planned Issues.');
+    });
 });
 
 app.listen(process.env.PORT, () => {
