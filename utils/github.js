@@ -53,15 +53,21 @@ const updateReposAndIssues = (token, user) => {
         }, {});
 
         // store/update assignedIssues in db
-        return Issues.bulkCreate(issuesRetrieved, {
-          updateOnDuplicate: ["title", "body", "reponame", "complete"]
-        });
+        // return Issues.bulkCreate(issuesRetrieved, {
+        //   updateOnDuplicate: ["title", "body", "reponame", "complete"]
+        // });
+        return Promise.all(issuesRetrieved.map(async (issue) => {
+          return await Issues.upsert(issue);
+        }));
       })
       .then(() => {
         // store/update repos with issues assigned to user in db
-        return Repos.bulkCreate(reposRetrieved, {
-          updateOnDuplicate: ["name", "owner"]
-        });
+        // return Repos.bulkCreate(reposRetrieved, {
+        //   updateOnDuplicate: ["name", "owner"]
+        // });
+        return Promise.all(reposRetrieved.map(async (repo) => {
+          return await Repos.upsert(repo);
+        }));
       })
       .then(() => resolve())
       .catch((err) => reject(err));
