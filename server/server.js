@@ -24,7 +24,9 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('plannerService');
+  User.findAll({}).then(users => {
+    res.send(users.data);
+  });
 });
 
 // retrieve/store user after login.

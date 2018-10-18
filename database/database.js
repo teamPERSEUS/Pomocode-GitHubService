@@ -1,15 +1,17 @@
+if (process.env.NODE_ENV !== 'production') require('dotenv').config();
 const Sequelize = require('sequelize');
-var db = new Sequelize('pomo_gitservice', 'root', '', {
-  host: 'localhost',
-  dialect: 'mysql'
-});
+// var db = new Sequelize('pomo_gitservice', 'root', '', {
+//   host: 'localhost',
+//   dialect: 'mysql'
+// });
+var db = new Sequelize(process.env.DATABASE_URL);
 
 // NOTE: Create DB 'pomo_gitservice' in mysql before running
 db.authenticate()
   .then(() => {
-    console.log('Connection has been established successfully')
+    console.log('Connection has been established successfully');
   })
-  .catch((err) => {
+  .catch(err => {
     console.error('Unable to connect to the database:', err);
   });
 
@@ -19,11 +21,11 @@ const User = db.define('user', {
   id: {
     type: Sequelize.INTEGER,
     primaryKey: true,
-    autoIncrement: true,
+    autoIncrement: true
   },
   name: {
     type: Sequelize.STRING,
-    unique: true,
+    unique: true
   }
 });
 
@@ -32,16 +34,16 @@ const Repos = db.define('repos', {
   id: {
     type: Sequelize.INTEGER,
     primaryKey: true,
-    autoIncrement: true,
+    autoIncrement: true
   },
   git_id: {
     type: Sequelize.STRING,
-    unique: true,
+    unique: true
   },
   username: Sequelize.STRING,
   name: Sequelize.STRING,
   owner: Sequelize.STRING,
-  url: Sequelize.STRING,
+  url: Sequelize.STRING
 });
 
 // Issues table
@@ -49,11 +51,11 @@ const Issues = db.define('issues', {
   id: {
     type: Sequelize.INTEGER,
     primaryKey: true,
-    autoIncrement: true,
+    autoIncrement: true
   },
   git_id: {
     type: Sequelize.STRING,
-    unique: true,
+    unique: true
   },
   username: Sequelize.STRING,
   reponame: Sequelize.STRING,
@@ -72,7 +74,7 @@ const Issues = db.define('issues', {
   },
   estimate_start_date: Sequelize.DATEONLY,
   estimate_end_date: Sequelize.DATEONLY,
-  estimate_time: Sequelize.FLOAT,
+  estimate_time: Sequelize.FLOAT
 });
 
 // create/connect to tables in the db
