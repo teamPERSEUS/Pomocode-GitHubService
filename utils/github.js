@@ -56,18 +56,30 @@ const updateReposAndIssues = (token, user) => {
         // return Issues.bulkCreate(issuesRetrieved, {
         //   updateOnDuplicate: ["title", "body", "reponame", "complete"]
         // });
-        return Promise.all(issuesRetrieved.map(async (issue) => {
-          return await Issues.upsert(issue);
-        }));
+        // return Promise.all(issuesRetrieved.map(async (issue) => {
+        //   return await Issues.upsert(issue);
+        // }));
+        async function storeIssues(upsertIssues) {
+          for (const issue of upsertIssues) {
+            await Issues.upsert(issue);
+          }
+        }
+        return storeIssues(issuesRetrieved);
       })
       .then(() => {
         // store/update repos with issues assigned to user in db
         // return Repos.bulkCreate(reposRetrieved, {
         //   updateOnDuplicate: ["name", "owner"]
         // });
-        return Promise.all(reposRetrieved.map(async (repo) => {
-          return await Repos.upsert(repo);
-        }));
+        // return Promise.all(reposRetrieved.map(async (repo) => {
+        //   return await Repos.upsert(repo);
+        // }));
+        async function storeRepos(upsertRepos) {
+          for (const repo of upsertRepos) {
+            await Repos.upsert(repo);
+          }
+        }
+        return storeRepos(reposRetrieved);
       })
       .then(() => resolve())
       .catch((err) => reject(err));
