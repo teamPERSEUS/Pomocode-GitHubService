@@ -11,6 +11,8 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+const analyticsDB = (process.env.NODE_ENV !== 'production') ? 'http://localhost:4002' : process.env.ANALYTICS_URL;
+
 // CORS headers
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -87,7 +89,7 @@ app.put('/addIssuePlan', (req, res) => {
   })
     .then(() => {
       axios
-        .post('http://localhost:4002/api/plannerMicro', req.body)
+        .post(`${analyticsDB}/api/plannerMicro`, req.body)
         .catch(err => {
           console.log('Error in sending issue to analytics:', err);
         });
